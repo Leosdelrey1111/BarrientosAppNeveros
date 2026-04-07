@@ -24,15 +24,15 @@ const ROLE_LANDING = {
 };
 
 function ProtectedRoute({ children, roles }) {
-  const { user, loading } = useAuth();
-  if (loading) return null;
+  const { user, initializing } = useAuth();
+  if (initializing) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to={ROLE_LANDING[user.role]} replace />;
   return children;
 }
 
 function AppShell() {
-  const { user, loading } = useAuth();
+  const { user, initializing } = useAuth();
   const location = useLocation();
 
   const [collapsed,  setCollapsed]  = useState(false);
@@ -50,7 +50,7 @@ function AppShell() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  if (loading) return (
+  if (initializing) return (
     <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FDFAF6" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>🍦</div>
@@ -60,6 +60,12 @@ function AppShell() {
   );
 
   const isLogin = location.pathname === "/login";
+
+  // Si ya hay usuario autenticado y estamos en login, redirigir al landing
+  if (isLogin && user) {
+    return <Navigate to={ROLE_LANDING[user.role]} replace />;
+  }
+
   if (isLogin || !user) {
     return (
       <Routes>

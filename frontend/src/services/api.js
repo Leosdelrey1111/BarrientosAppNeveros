@@ -17,8 +17,10 @@ api.interceptors.response.use(
   response => response,
   async error => {
     const original = error.config;
+    const isAuthEndpoint = original.url?.includes("/auth/");
 
-    if (error.response?.status === 401 && !original._retry) {
+    // No intentar refresh en rutas de auth (login, refresh, etc.)
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       const refreshToken = localStorage.getItem("refresh_token");
 
@@ -33,7 +35,10 @@ api.interceptors.response.use(
         } catch (_) {
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
-          window.location.href = "/login";
+          // Solo redirigir si no estamos ya en login
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
         }
       }
     }

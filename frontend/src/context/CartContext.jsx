@@ -26,7 +26,7 @@ export function CartProvider({ children }) {
 
   const clearCart = useCallback(() => setItems([]), []);
 
-  const total      = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const total      = Math.round(items.reduce((s, i) => s + i.price * i.qty, 0) * 100) / 100;
   const itemCount  = items.reduce((s, i) => s + i.qty, 0);
 
   return (

@@ -15,6 +15,7 @@ class Product(db.Model):
     stock        = db.Column(db.Integer, default=0, nullable=False)
     stock_alert  = db.Column(db.Integer, default=10, nullable=False)
     emoji        = db.Column(db.String(10), default="🍦")
+    image_url    = db.Column(db.String(500), nullable=True)
     is_active    = db.Column(db.Boolean, default=True)
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at   = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -36,6 +37,7 @@ class Product(db.Model):
             "stock":       self.stock,
             "stock_alert": self.stock_alert,
             "emoji":       self.emoji,
+            "image_url":   self.image_url,
             "is_active":   self.is_active,
             "is_low_stock":self.is_low_stock,
         }

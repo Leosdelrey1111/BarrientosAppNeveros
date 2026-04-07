@@ -11,11 +11,16 @@ export const authService = {
 
 // ── Products ───────────────────────────────────────────────────────────
 export const productService = {
-  getAll:   (params) => api.get("/products/",       { params }),
-  getOne:   (id)     => api.get(`/products/${id}`),
-  create:   (data)   => api.post("/products/",      data),
-  update:   (id, d)  => api.put(`/products/${id}`,  d),
-  remove:   (id)     => api.delete(`/products/${id}`),
+  getAll:      (params) => api.get("/products/",              { params }),
+  getOne:      (id)     => api.get(`/products/${id}`),
+  create:      (data)   => api.post("/products/",             data),
+  update:      (id, d)  => api.put(`/products/${id}`,         d),
+  remove:      (id)     => api.delete(`/products/${id}`),
+  uploadImage: (id, file) => {
+    const fd = new FormData();
+    fd.append("image", file);
+    return api.post(`/products/${id}/image`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+  },
 };
 
 // ── Inventory ──────────────────────────────────────────────────────────

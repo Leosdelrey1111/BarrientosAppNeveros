@@ -1,10 +1,18 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
+from marshmallow import ValidationError
+
 from app import db
 from app.models.product import Product
+from app.schemas import ProductSchema, ProductUpdateSchema
 from app.utils.auth import roles_required
+from app.utils.responses import success, created, error
+from app.utils.s3 import upload_image, delete_image
 
 products_bp = Blueprint("products", __name__)
+
+_create_schema = ProductSchema()
+_update_schema = ProductUpdateSchema()
 
 
 @products_bp.get("/")
@@ -20,66 +28,72 @@ def get_products():
     if search:
         q = q.filter(Product.name.ilike(f"%{search}%"))
 
-    products = q.order_by(Product.category, Product.name).all()
-    return jsonify([p.to_dict() for p in products]), 200
+    return success([p.to_dict() for p in q.order_by(Product.category, Product.name).all()])
 
 
 @products_bp.get("/<int:product_id>")
 @jwt_required()
 def get_product(product_id):
     product = Product.query.get_or_404(product_id)
-    return jsonify(product.to_dict()), 200
+    return success(product.to_dict())
 
 
 @products_bp.post("/")
 @roles_required("admin")
 def create_product():
-    data = request.get_json(silent=True) or {}
+    try:
+        data = _create_schema.load(request.get_json(silent=True) or {})
+    except ValidationError as e:
+        return error("Datos inválidos", details=e.messages)
 
-    required = ["name", "category", "price"]
-    for field in required:
-        if not data.get(field):
-            return jsonify({"error": f"Campo requerido: {field}"}), 400
-
-    if data["category"] not in ["Paletas", "Helados", "Sorbetes", "Raspados"]:
-        return jsonify({"error": "Categoría inválida"}), 400
-
-    product = Product(
-        name        = data["name"].strip(),
-        category    = data["category"],
-        price       = float(data["price"]),
-        stock       = int(data.get("stock", 0)),
-        stock_alert = int(data.get("stock_alert", 10)),
-        emoji       = data.get("emoji", "🍦"),
-    )
+    product = Product(**data)
     db.session.add(product)
     db.session.commit()
-
-    return jsonify(product.to_dict()), 201
+    return created(product.to_dict())
 
 
 @products_bp.put("/<int:product_id>")
 @roles_required("admin")
 def update_product(product_id):
     product = Product.query.get_or_404(product_id)
-    data    = request.get_json(silent=True) or {}
+    try:
+        data = _update_schema.load(request.get_json(silent=True) or {})
+    except ValidationError as e:
+        return error("Datos inválidos", details=e.messages)
 
-    if "name"        in data: product.name        = data["name"].strip()
-    if "category"    in data: product.category    = data["category"]
-    if "price"       in data: product.price       = float(data["price"])
-    if "stock"       in data: product.stock       = int(data["stock"])
-    if "stock_alert" in data: product.stock_alert = int(data["stock_alert"])
-    if "emoji"       in data: product.emoji       = data["emoji"]
-    if "is_active"   in data: product.is_active   = bool(data["is_active"])
+    for field, value in data.items():
+        setattr(product, field, value)
 
     db.session.commit()
-    return jsonify(product.to_dict()), 200
+    return success(product.to_dict())
 
 
 @products_bp.delete("/<int:product_id>")
 @roles_required("admin")
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
-    product.is_active = False  # Soft delete
+    product.is_active = False
     db.session.commit()
-    return jsonify({"message": "Producto desactivado"}), 200
+    return success({"message": "Producto desactivado"})
+
+
+@products_bp.post("/<int:product_id>/image")
+@roles_required("admin")
+def upload_product_image(product_id):
+    product = Product.query.get_or_404(product_id)
+    file    = request.files.get("image")
+    if not file:
+        return error("No se recibió ningún archivo")
+    allowed = {"jpg", "jpeg", "png", "webp"}
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in allowed:
+        return error("Formato no permitido. Usa JPG, PNG o WEBP")
+    if product.image_url:
+        delete_image(product.image_url)
+    try:
+        url = upload_image(file)
+    except Exception as e:
+        return error(f"Error al subir imagen: {str(e)}", 500)
+    product.image_url = url
+    db.session.commit()
+    return success({"image_url": url})
