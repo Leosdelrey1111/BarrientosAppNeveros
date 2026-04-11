@@ -4,8 +4,9 @@ import api from "../services/api";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user,         setUser]         = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
   // Al montar, verificar si hay token guardado
   useEffect(() => {
@@ -13,10 +14,14 @@ export function AuthProvider({ children }) {
     if (token) {
       api.get("/auth/me")
         .then(r => setUser(r.data))
-        .catch(() => localStorage.removeItem("access_token"))
-        .finally(() => setLoading(false));
+        .catch(() => {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+        })
+        .finally(() => { setLoading(false); setInitializing(false); });
     } else {
       setLoading(false);
+      setInitializing(false);
     }
   }, []);
 
@@ -38,7 +43,7 @@ export function AuthProvider({ children }) {
   const hasRole = useCallback((...roles) => roles.includes(user?.role), [user]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, initializing, login, logout, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

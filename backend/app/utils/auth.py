@@ -32,7 +32,7 @@ def roles_required(*roles):
 def get_current_user_id() -> int:
     """Obtiene el ID del usuario del JWT actual."""
     from flask_jwt_extended import get_jwt_identity
-    return get_jwt_identity()
+    return int(get_jwt_identity())
 
 
 def get_current_user_role() -> str:
