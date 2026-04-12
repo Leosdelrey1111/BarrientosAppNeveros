@@ -3,28 +3,63 @@ import { useFetch } from "../hooks/useFetch";
 import { userService } from "../services";
 import { initials, ROLE_COLORS, ROLE_LABELS } from "../utils/helpers";
 import { Modal, Spinner, Alert, Field } from "../components/shared/UI";
+import { Icon } from "@iconify/react";
 
 const SYSTEM_ITEMS = [
-  { icon: "🔐", label: "JWT Auth",         sub: "HMAC-SHA256 · Activo"      },
-  { icon: "🗄️", label: "MySQL + SQLAlchemy", sub: "Migraciones al día"       },
-  { icon: "🐳", label: "Docker Compose",    sub: "Backend + Frontend + DB"   },
-  { icon: "☁️", label: "Railway / Render",  sub: "CI/CD configurado"         },
-  { icon: "🔒", label: "bcrypt (cost 12)",  sub: "Contraseñas cifradas"       },
-  { icon: "📧", label: "Flask-Mail",        sub: "Reset de contraseña listo"  },
+  {
+    icon: "fluent:shield-checkmark-16-regular",
+    label: "JWT Auth",
+    sub: "HMAC-SHA256 · Activo",
+  },
+  {
+    icon: "ant-design:database-outlined",
+    label: "MySQL + SQLAlchemy",
+    sub: "Migraciones al día",
+  },
+  {
+    icon: "streamline-logos:docker-logo",
+    label: "Docker Compose",
+    sub: "Backend + Frontend + DB",
+  },
+  {
+    icon: "fluent:cloud-16-regular",
+    label: "Railway / Render",
+    sub: "CI/CD configurado",
+  },
+  {
+    icon: "fluent:lock-shield-16-regular",
+    label: "bcrypt (cost 12)",
+    sub: "Contraseñas cifradas",
+  },
+  {
+    icon: "fluent:mail-16-regular",
+    label: "Flask-Mail",
+    sub: "Reset de contraseña listo",
+  },
 ];
 
 export default function AdminPage() {
-  const { data: users, loading, refetch } = useFetch(() => userService.getAll());
+  const {
+    data: users,
+    loading,
+    refetch,
+  } = useFetch(() => userService.getAll());
 
-  const [modal,  setModal]  = useState(false);
-  const [form,   setForm]   = useState({ name: "", email: "", password: "", role: "cajero" });
+  const [modal, setModal] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "cajero",
+  });
   const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState("");
+  const [error, setError] = useState("");
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleCreate = async () => {
-    setError(""); setSaving(true);
+    setError("");
+    setSaving(true);
     try {
       await userService.create(form);
       setModal(false);
@@ -45,66 +80,91 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="fade-in" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20, overflowY: "auto", height: "100%" }}>
-
+    <div className="fade-in p-5 flex flex-col gap-5 overflow-y-auto h-full">
       {/* Users */}
-      <div className="card" style={{ padding: "22px 24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: 15, fontWeight: 700, color: "#0F2D40" }}>
-            👥 Gestión de Usuarios
+      <div className="card px-4 sm:px-6 py-[22px]">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-[18px]">
+          <h3 className="font-syne text-[15px] font-bold text-teal-600 flex items-center gap-2">
+            <Icon icon="lucide:users" className="text-lg" />
+            Gestión de Usuarios
           </h3>
-          <button className="btn-primary" onClick={() => setModal(true)}>+ Nuevo usuario</button>
+          <button
+            className="btn-primary flex items-center justify-center gap-1.5 w-full sm:w-auto"
+            onClick={() => setModal(true)}
+          >
+            <Icon icon="icons8:add-user" className="text-lg" />
+            Nuevo usuario
+          </button>
         </div>
 
-        {loading
-          ? <Spinner />
-          : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {(users || []).map(u => {
-                const rc = ROLE_COLORS[u.role] || {};
-                return (
-                  <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "#F8FAFC", borderRadius: 12, opacity: u.is_active ? 1 : .6 }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg,#0D9488,#0F766E)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#fff", fontWeight: 700, fontSize: 14,
-                    }}>{initials(u.name)}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, color: "#0F2D40", fontSize: 14 }}>{u.name}</p>
-                      <p style={{ fontSize: 12, color: "#64748B" }}>{u.email}</p>
-                    </div>
-                    <span style={{ padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: rc.bg, color: rc.text, flexShrink: 0 }}>
+        {loading ? (
+          <Spinner />
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {(users || []).map((u) => {
+              const rc = ROLE_COLORS[u.role] || {};
+              return (
+                <div
+                  key={u.id}
+                  className={`flex flex-wrap sm:flex-nowrap items-center gap-3 px-4 py-3.5 rounded-xl ${rc.tag || "bg-slate-50"} ${u.is_active ? "opacity-100" : "opacity-60"}`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full shrink-0 ${rc.icon} flex items-center justify-center text-white font-bold text-sm`}
+                  >
+                    {initials(u.name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-navy text-sm truncate">
+                      {u.name}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">{u.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto ml-0 sm:ml-auto">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${rc.chip}`}
+                    >
                       {ROLE_LABELS[u.role]}
                     </span>
-                    <button onClick={() => toggleActive(u)} style={{
-                      padding: "5px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
-                      background: u.is_active ? "#FFE4E633" : "#D1FAE5",
-                      color:      u.is_active ? "#BE123C"   : "#065F46",
-                      flexShrink: 0,
-                    }}>
+                    <button
+                      onClick={() => toggleActive(u)}
+                      className={`px-3 py-1.5 rounded-lg border-none cursor-pointer text-xs font-semibold shrink-0 ml-auto sm:ml-0 ${
+                        u.is_active
+                          ? "bg-rose-100/20 text-rose-700"
+                          : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
                       {u.is_active ? "Desactivar" : "Activar"}
                     </button>
                   </div>
-                );
-              })}
-            </div>
-          )
-        }
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* System status */}
-      <div className="card" style={{ padding: "22px 24px" }}>
-        <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: 15, fontWeight: 700, color: "#0F2D40", marginBottom: 16 }}>
-          ⚙️ Estado del Sistema
+      <div className="card px-4 sm:px-6 py-[22px]">
+        <h3 className="font-syne text-[15px] font-bold text-teal-600 mb-4 flex items-center gap-2">
+          <Icon icon="fluent:info-16-regular" className="text-lg" />
+          Estado del Sistema
         </h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 10 }}>
-          {SYSTEM_ITEMS.map(s => (
-            <div key={s.label} style={{ background: "#F8FAFC", borderRadius: 12, padding: "14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
-              <span style={{ fontSize: 24 }}>{s.icon}</span>
-              <div>
-                <p style={{ fontWeight: 600, color: "#0F2D40", fontSize: 13 }}>{s.label}</p>
-                <p style={{ fontSize: 11, color: "#10B981", fontWeight: 500, marginTop: 2 }}>✓ {s.sub}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          {SYSTEM_ITEMS.map((s) => (
+            <div
+              key={s.label}
+              className="bg-slate-100 rounded-xl px-4 py-3.5 flex gap-3 items-center"
+            >
+              <span className="text-2xl text-red-300 shrink-0">
+                <Icon icon={s.icon} />
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-navy text-[13px] truncate">
+                  {s.label}
+                </p>
+                <p className="text-[11px] text-emerald-500 font-medium mt-0.5">
+                  ✓ {s.sub}
+                </p>
               </div>
             </div>
           ))}
@@ -113,28 +173,62 @@ export default function AdminPage() {
 
       {/* Create user modal */}
       {modal && (
-        <Modal title="Nuevo usuario" onClose={() => setModal(false)}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <Modal
+          title="Nuevo usuario"
+          onClose={() => setModal(false)}
+          icon="icons8:add-user"
+        >
+          <div className="flex flex-col gap-3">
             {error && <Alert type="error">{error}</Alert>}
             <Field label="Nombre completo">
-              <input className="input-base" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Ej: María García" />
+              <input
+                className="input-base"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="Ej: María García"
+              />
             </Field>
             <Field label="Correo electrónico">
-              <input className="input-base" type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="usuario@neveria.mx" />
+              <input
+                className="input-base"
+                type="email"
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+                placeholder="usuario@neveria.mx"
+              />
             </Field>
             <Field label="Contraseña inicial">
-              <input className="input-base" type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder="Mínimo 6 caracteres" />
+              <input
+                className="input-base"
+                type="password"
+                value={form.password}
+                onChange={(e) => set("password", e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+              />
             </Field>
             <Field label="Rol">
-              <select className="input-base" value={form.role} onChange={e => set("role", e.target.value)}>
+              <select
+                className="input-base"
+                value={form.role}
+                onChange={(e) => set("role", e.target.value)}
+              >
                 <option value="admin">Administrador</option>
                 <option value="cajero">Cajero</option>
                 <option value="consultor">Consultor</option>
               </select>
             </Field>
-            <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-              <button className="btn-ghost" onClick={() => setModal(false)} style={{ flex: 1 }}>Cancelar</button>
-              <button className="btn-primary" onClick={handleCreate} disabled={saving} style={{ flex: 1 }}>
+            <div className="flex gap-2.5 mt-1">
+              <button
+                className="btn-ghost flex-1"
+                onClick={() => setModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-primary flex-1"
+                onClick={handleCreate}
+                disabled={saving}
+              >
                 {saving ? "Creando…" : "Crear usuario"}
               </button>
             </div>

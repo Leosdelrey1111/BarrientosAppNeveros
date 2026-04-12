@@ -22,7 +22,12 @@ function SaleHistoryModal({ onClose }) {
   );
 
   return (
-    <Modal title="Historial de ventas" onClose={onClose} maxWidth={600}>
+    <Modal
+      title="Historial de ventas"
+      onClose={onClose}
+      maxWidth={600}
+      icon={"mdi:history"}
+    >
       {detail ? (
         <div>
           <button
@@ -99,12 +104,12 @@ function SaleHistoryModal({ onClose }) {
                           <p className="text-[13px] font-semibold text-navy">
                             {item.product_name}
                           </p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-sm text-slate-400">
                             {fmt(item.unit_price)} × {item.quantity}
                           </p>
                         </div>
                       </div>
-                      <p className="text-[13px] font-bold text-teal shrink-0">
+                      <p className="text-sm font-bold text-teal shrink-0">
                         {fmt(item.subtotal)}
                       </p>
                     </div>
@@ -115,7 +120,7 @@ function SaleHistoryModal({ onClose }) {
                   <span className="text-slate-400 text-[13px] font-semibold">
                     Total cobrado
                   </span>
-                  <span className="text-white font-syne text-[22px] font-extrabold">
+                  <span className="text-white font-syne text-[22px] font-bold">
                     {fmt(saleDetail.data.total)}
                   </span>
                 </div>
@@ -160,12 +165,12 @@ function SaleHistoryModal({ onClose }) {
                   <p className="text-[13px] font-bold text-navy">
                     Venta #{s.id}
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-md text-slate-400">
                     {fmtDate(s.created_at)} · {fmtTime(s.created_at)} ·{" "}
                     {s.item_count} producto(s) · {s.cashier}
                   </p>
                 </div>
-                <p className="font-syne text-base font-extrabold text-teal shrink-0">
+                <p className="font-syne text-base font-bold text-teal shrink-0">
                   {fmt(s.total)}
                 </p>
               </button>
@@ -180,14 +185,19 @@ function SaleHistoryModal({ onClose }) {
 /* ── Ticket de confirmación ──────────────────────────────────────────── */
 function TicketModal({ sale, onClose }) {
   return (
-    <Modal title="Venta registrada" onClose={onClose} maxWidth={360}>
+    <Modal
+      title="Venta registrada"
+      onClose={onClose}
+      maxWidth={360}
+      icon={"mdi:check-circle-outline"}
+    >
       <div className="flex flex-col gap-3">
         <div className="text-center py-2 pb-4">
           <Icon
             icon="mdi:party-popper"
             className="text-5xl text-amber-400 mx-auto mb-2"
           />
-          <p className="font-syne text-[28px] font-extrabold text-teal">
+          <p className="font-syne text-[28px] font-bold text-teal">
             {fmt(sale.total)}
           </p>
           <p className="text-[13px] text-slate-500 mt-1">
@@ -200,7 +210,7 @@ function TicketModal({ sale, onClose }) {
             <span className="text-sm text-emerald-800 font-semibold">
               Cambio a entregar
             </span>
-            <span className="font-syne text-xl font-extrabold text-emerald-600">
+            <span className="font-syne text-xl font-bold text-emerald-600">
               {fmt(sale.change)}
             </span>
           </div>
@@ -379,159 +389,162 @@ export default function POSPage() {
               Historial
             </button>
           </div>
-
           {/* Grid de productos */}
-          <div className="flex-1 overflow-y-auto p-2.5 sm:p-3.5 grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2 sm:gap-2.5 content-start">
-            {loadingProducts ? (
-              <div className="col-span-full">
-                <Spinner />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="col-span-full">
-                <EmptyState icon="🔍" title="Sin resultados" />
-              </div>
-            ) : (
-              filtered.map((p) => {
-                const inCart = items.find((i) => i.id === p.id);
-                const outStock = p.stock === 0;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      if (!outStock) addItem(p);
-                    }}
-                    className={`bg-white text-left rounded-[14px] p-0 overflow-hidden transition-all duration-150 w-full
+          <div className="flex-1 overflow-y-auto p-2.5 sm:p-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2 sm:gap-2.5 content-start">
+              {loadingProducts ? (
+                <div className="col-span-full">
+                  <Spinner />
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="col-span-full">
+                  <EmptyState icon="🔍" title="Sin resultados" />
+                </div>
+              ) : (
+                filtered.map((p) => {
+                  const inCart = items.find((i) => i.id === p.id);
+                  const outStock = p.stock === 0;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        if (!outStock) addItem(p);
+                      }}
+                      className={`bg-white text-left rounded-[14px] p-0 overflow-hidden transition-all duration-150 w-full
             ${outStock ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
             ${
               inCart
                 ? "border-[1.5px] border-teal shadow-[0_0_0_3px_#0D948822]"
                 : "border-[1.5px] border-slate-200 hover:border-slate-300"
             }`}
-                  >
-                    {/* ── MÓVIL: fila horizontal ── */}
-                    <div className="flex sm:hidden items-center gap-0">
-                      {/* Imagen cuadrada */}
-                      <div className="w-[80px] h-[80px] shrink-0 bg-slate-50 flex items-center justify-center overflow-hidden rounded-l-[13px]">
-                        {p.image_url ? (
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-[38px] leading-none">
-                            {p.emoji}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Divisor */}
-                      <div className="w-px h-[80px] bg-slate-100 shrink-0" />
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0 px-3.5 py-2.5 flex flex-col justify-center gap-1">
-                        <p className="text-[13px] font-semibold text-navy leading-snug line-clamp-2">
-                          {p.name}
-                        </p>
-                        <p className="font-syne text-teal font-extrabold text-[15px]">
-                          {fmt(p.price)}
-                        </p>
-                        {p.is_low_stock && !outStock && (
-                          <p className="text-[11px] text-amber-500 font-semibold flex items-center gap-1 leading-none">
-                            <Icon
-                              icon="mdi:alert-circle-outline"
-                              className="text-[12px] shrink-0"
+                    >
+                      {/* ── MÓVIL: fila horizontal ── */}
+                      <div className="flex sm:hidden items-center gap-0">
+                        {/* Imagen cuadrada */}
+                        <div className="w-[80px] h-[80px] shrink-0 bg-slate-50 flex items-center justify-center overflow-hidden rounded-l-[13px]">
+                          {p.image_url ? (
+                            <img
+                              src={p.image_url}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
                             />
-                            Poco stock ({p.stock})
-                          </p>
-                        )}
-                        {outStock && (
-                          <p className="text-[11px] text-rose-500 font-semibold flex items-center gap-1 leading-none">
-                            <Icon
-                              icon="mdi:close-circle-outline"
-                              className="text-[12px] shrink-0"
-                            />
-                            Sin stock
-                          </p>
-                        )}
-                        {inCart && (
-                          <p className="text-[11px] text-teal font-bold flex items-center gap-1 leading-none">
-                            <Icon
-                              icon="mdi:check-circle"
-                              className="text-[12px] shrink-0"
-                            />
-                            En carrito ({inCart.qty})
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Check badge derecho */}
-                      {inCart && (
-                        <div className="pr-3 shrink-0">
-                          <div className="w-5 h-5 rounded-full bg-teal flex items-center justify-center">
-                            <Icon
-                              icon="mdi:check"
-                              className="text-white text-[11px]"
-                            />
-                          </div>
+                          ) : (
+                            <span className="text-[38px] leading-none">
+                              {p.emoji}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* ── DESKTOP: columna vertical — idéntico al original ── */}
-                    <div className="hidden sm:block">
-                      <div className="w-full h-[100px] overflow-hidden bg-slate-50 flex items-center justify-center">
-                        {p.image_url ? (
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-[40px]">{p.emoji}</span>
-                        )}
-                      </div>
-                      <div className="px-3 py-2.5">
-                        <p className="text-xs font-semibold text-navy leading-tight mb-1">
-                          {p.name}
-                        </p>
-                        <p className="font-syne text-teal font-bold text-[15px]">
-                          {fmt(p.price)}
-                        </p>
-                        {p.is_low_stock && !outStock && (
-                          <p className="text-[10px] text-amber-500 mt-0.5 font-semibold flex items-center gap-0.5">
-                            <Icon
-                              icon="mdi:alert-circle-outline"
-                              className="text-xs shrink-0"
-                            />
-                            Poco stock ({p.stock})
+                        {/* Divisor */}
+                        <div className="w-px h-[80px] bg-slate-100 shrink-0" />
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0 px-3.5 py-2.5 flex flex-col justify-center gap-1">
+                          <p className="text-sm font-semibold text-navy leading-snug line-clamp-2">
+                            {p.name}
                           </p>
-                        )}
-                        {outStock && (
-                          <p className="text-[10px] text-rose-500 mt-0.5 font-semibold flex items-center gap-0.5">
-                            <Icon
-                              icon="mdi:close-circle-outline"
-                              className="text-xs shrink-0"
-                            />
-                            Sin stock
+                          <p className="font-syne text-teal font-bold text-sm">
+                            {fmt(p.price)}
                           </p>
-                        )}
+                          {p.is_low_stock && !outStock && (
+                            <p className="text-sm text-amber-500 font-semibold flex items-center gap-1 leading-none">
+                              <Icon
+                                icon="mdi:alert-circle-outline"
+                                className="text-md shrink-0"
+                              />
+                              Poco stock ({p.stock})
+                            </p>
+                          )}
+                          {outStock && (
+                            <p className="text-[11px] text-rose-500 font-semibold flex items-center gap-1 leading-none">
+                              <Icon
+                                icon="mdi:close-circle-outline"
+                                className="text-[12px] shrink-0"
+                              />
+                              Sin stock
+                            </p>
+                          )}
+                          {inCart && (
+                            <p className="text-[11px] text-teal font-bold flex items-center gap-1 leading-none">
+                              <Icon
+                                icon="mdi:check-circle"
+                                className="text-[12px] shrink-0"
+                              />
+                              En carrito ({inCart.qty})
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Check badge derecho */}
                         {inCart && (
-                          <p className="text-[10px] text-teal mt-0.5 font-bold flex items-center gap-0.5">
-                            <Icon
-                              icon="mdi:check-circle"
-                              className="text-xs shrink-0"
-                            />
-                            En carrito ({inCart.qty})
-                          </p>
+                          <div className="pr-3 shrink-0">
+                            <div className="w-5 h-5 rounded-full bg-teal flex items-center justify-center">
+                              <Icon
+                                icon="mdi:check"
+                                className="text-white text-[11px]"
+                              />
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
+
+                      {/* ── DESKTOP: columna vertical — idéntico al original ── */}
+                      <div className="hidden sm:block">
+                        <div className="w-full h-[100px] overflow-hidden bg-slate-50 flex items-center justify-center">
+                          {p.image_url ? (
+                            <img
+                              src={p.image_url}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[40px]">{p.emoji}</span>
+                          )}
+                        </div>
+                        <div className="px-3 py-2.5">
+                          <p className="text-xs font-semibold text-navy leading-tight mb-1">
+                            {p.name}
+                          </p>
+                          <p className="font-syne text-teal font-bold text-sm">
+                            {fmt(p.price)}
+                          </p>
+                          {p.is_low_stock && !outStock && (
+                            <p className="text-sm text-amber-500 mt-0.5 font-semibold flex items-center gap-0.5">
+                              <Icon
+                                icon="mdi:alert-circle-outline"
+                                className="text-xs shrink-0"
+                              />
+                              Poco stock ({p.stock})
+                            </p>
+                          )}
+                          {outStock && (
+                            <p className="text-[10px] text-rose-500 mt-0.5 font-semibold flex items-center gap-0.5">
+                              <Icon
+                                icon="mdi:close-circle-outline"
+                                className="text-xs shrink-0"
+                              />
+                              Sin stock
+                            </p>
+                          )}
+                          {inCart && (
+                            <p className="text-[10px] text-teal mt-0.5 font-bold flex items-center gap-0.5">
+                              <Icon
+                                icon="mdi:check-circle"
+                                className="text-xs shrink-0"
+                              />
+                              En carrito ({inCart.qty})
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>{" "}
+            {/* cierre del grid */}
+          </div>{" "}
+          {/* cierre del flex-1 overflow */}
         </div>
 
         {/* ── RIGHT: Carrito ── */}
@@ -626,7 +639,7 @@ export default function POSPage() {
               <span className="font-syne text-base font-bold text-navy">
                 Total
               </span>
-              <span className="font-syne text-2xl font-extrabold text-teal">
+              <span className="font-syne text-2xl font-bold text-teal">
                 {fmt(total)}
               </span>
             </div>
@@ -671,7 +684,7 @@ export default function POSPage() {
                 <span className="text-[13px] text-emerald-800 font-semibold">
                   Cambio
                 </span>
-                <span className="font-syne text-lg font-extrabold text-emerald-600">
+                <span className="font-syne text-lg font-bold text-emerald-600">
                   {fmt(change)}
                 </span>
               </div>
