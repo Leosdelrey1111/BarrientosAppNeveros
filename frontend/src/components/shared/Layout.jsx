@@ -2,15 +2,44 @@ import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { initials, ROLE_COLORS, ROLE_LABELS } from "../../utils/helpers";
+import paleteriaIcon from "../media/paleteriaicon.png";
+import SidebarButton from "./SidebarButton";
+import { Icon } from "@iconify/react";
 
 const NAV_ITEMS = [
-  { to: "/pos",       icon: "🛒", label: "Punto de Venta", roles: ["admin", "cajero"] },
-  { to: "/inventory", icon: "📦", label: "Inventario",     roles: ["admin", "cajero", "consultor"] },
-  { to: "/reports",   icon: "📊", label: "Reportes",       roles: ["admin", "consultor"] },
-  { to: "/admin",     icon: "⚙️",  label: "Administración", roles: ["admin"] },
+  {
+    to: "/pos",
+    icon: "mdi:cart-outline",
+    label: "Punto de Venta",
+    roles: ["admin", "cajero"],
+  },
+  {
+    to: "/inventory",
+    icon: "mdi:package-variant",
+    label: "Inventario",
+    roles: ["admin", "cajero", "consultor"],
+  },
+  {
+    to: "/reports",
+    icon: "mdi:chart-bar",
+    label: "Reportes",
+    roles: ["admin", "consultor"],
+  },
+  {
+    to: "/admin",
+    icon: "mdi:cog-outline",
+    label: "Administración",
+    roles: ["admin"],
+  },
 ];
 
-export function Sidebar({ collapsed, onToggle, isMobile, mobileOpen, onMobileClose }) {
+export function Sidebar({
+  collapsed,
+  onToggle,
+  isMobile,
+  mobileOpen,
+  onMobileClose,
+}) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -20,51 +49,84 @@ export function Sidebar({ collapsed, onToggle, isMobile, mobileOpen, onMobileClo
   };
 
   const roleStyle = ROLE_COLORS[user?.role] || {};
-  const visible   = NAV_ITEMS.filter(n => n.roles.includes(user?.role));
+  const visible = NAV_ITEMS.filter((n) => n.roles.includes(user?.role));
 
   const inner = (
-    <aside style={{
-      width: isMobile ? 260 : collapsed ? 70 : 240,
-      height: "100%",
-      background: "#0F2D40",
-      display: "flex",
-      flexDirection: "column",
-      transition: isMobile ? "none" : "width .25s cubic-bezier(.22,1,.36,1)",
-      flexShrink: 0,
-      overflow: "hidden",
-    }}>
+    <aside
+      className={`h-full bg-gradient-to-br from-red-300 to-teal-200 flex flex-col shrink-0 overflow-hidden ${
+        isMobile
+          ? "w-[260px]"
+          : `transition-[width] duration-[250ms] ease-[cubic-bezier(.22,1,.36,1)] ${
+              collapsed ? "w-[70px]" : "w-60"
+            }`
+      }`}
+    >
       {/* Logo */}
-      <div style={{ padding: "20px 16px", display: "flex", alignItems: "center", gap: 12, minHeight: 70 }}>
-        <div style={{
-          minWidth: 38, height: 38, borderRadius: 10, flexShrink: 0,
-          background: "linear-gradient(135deg,#0D9488,#0F766E)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 12px #0D948844", fontSize: 20,
-        }}>🍦</div>
+      <div
+        className={`flex flex-col items-center px-3 pt-5 pb-4 ${collapsed && !isMobile ? "" : "border-b border-white/10 mb-2"}`}
+      >
+        <div
+          className={`rounded-2xl shrink-0  flex items-center justify-center transition-all duration-200 ${
+            collapsed && !isMobile
+              ? "w-[38px] h-[38px] rounded-[10px]"
+              : isMobile
+                ? "w-14 h-14 mb-2"
+                : "w-[72px] h-[72px] mb-3"
+          }`}
+        >
+          <img
+            src={paleteriaIcon}
+            alt="NeveriaPOS"
+            className={`object-contain transition-all duration-200 ${
+              collapsed && !isMobile
+                ? "w-6 h-6"
+                : isMobile
+                  ? "w-14 h-14"
+                  : "w-18 h-18"
+            }`}
+          />
+        </div>
+
         {(!collapsed || isMobile) && (
-          <div>
-            <div style={{ color: "#fff", fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 17 }}>NeveriaPOS</div>
-            <div style={{ color: "#CCFBF166", fontSize: 11 }}>Artesanal · v1.0</div>
+          <div className="text-center">
+            <div
+              className={`text-white font-syne font-bold ${isMobile ? "text-base" : "text-lg"}`}
+            >
+              NeveriaPOS
+            </div>
+            <div className="text-teal-700 text-[11px]">Artesanal · v1.0</div>
           </div>
         )}
+
+        {/* Cerrar móvil */}
         {isMobile && (
-          <button onClick={onMobileClose} style={{ marginLeft: "auto", background: "none", border: "none", color: "#fff9", fontSize: 20, cursor: "pointer" }}>✕</button>
+          <button
+            onClick={onMobileClose}
+            className="absolute top-3 right-3 bg-transparent border-none text-white/60 text-xl cursor-pointer hover:text-white/90 transition-colors"
+          >
+            <Icon icon="mdi:close" />
+          </button>
         )}
       </div>
 
       {/* User card */}
       {(!collapsed || isMobile) && user && (
-        <div style={{ margin: "0 12px 14px", background: "#1A3F58", borderRadius: 12, padding: "12px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-              background: "linear-gradient(135deg,#0D9488,#0F766E)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontWeight: 700, fontSize: 13,
-            }}>{initials(user.name)}</div>
-            <div style={{ overflow: "hidden", flex: 1 }}>
-              <div style={{ color: "#fff", fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.name}</div>
-              <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 700, background: roleStyle.bg, color: roleStyle.text }}>
+        <div className={`mx-3 mb-3.5 ${roleStyle.tag} rounded-xl p-3`}>
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white font-bold text-[13px] ${roleStyle.icon}`}
+            >
+              {initials(user.name)}
+            </div>
+            <div className="overflow-hidden flex-1">
+              <div
+                className={`text-white font-semibold text-[13px] whitespace-nowrap overflow-hidden text-ellipsis ${roleStyle.textcolor}`}
+              >
+                {user.name}
+              </div>
+              <span
+                className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${roleStyle.chip}`}
+              >
                 {ROLE_LABELS[user.role]}
               </span>
             </div>
@@ -73,97 +135,99 @@ export function Sidebar({ collapsed, onToggle, isMobile, mobileOpen, onMobileClo
       )}
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: "0 8px", display: "flex", flexDirection: "column", gap: 3 }}>
-        {visible.map(n => (
-          <NavLink key={n.to} to={n.to} onClick={isMobile ? onMobileClose : undefined}
-            style={({ isActive }) => ({
-              display: "flex", alignItems: "center",
-              gap: 12, padding: collapsed && !isMobile ? "12px 0" : "10px 14px",
-              justifyContent: collapsed && !isMobile ? "center" : "flex-start",
-              borderRadius: 12, textDecoration: "none",
-              background: isActive ? "#0D948822" : "transparent",
-              color: isActive ? "#CCFBF1" : "#ffffff77",
-              fontWeight: isActive ? 600 : 400, fontSize: 14,
-              transition: "all .15s",
-              borderLeft: isActive ? "3px solid #0D9488" : "3px solid transparent",
-            })}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{n.icon}</span>
-            {(!collapsed || isMobile) && <span style={{ whiteSpace: "nowrap" }}>{n.label}</span>}
-          </NavLink>
+      <nav className="flex-1 px-2 flex flex-col gap-0.5">
+        {visible.map((n) => (
+          <SidebarButton
+            key={n.to}
+            to={n.to}
+            icon={n.icon}
+            label={n.label}
+            color="teal"
+            collapsed={collapsed}
+            isMobile={isMobile}
+            onClick={isMobile ? onMobileClose : undefined}
+          />
         ))}
       </nav>
 
       {/* Logout + collapse */}
-      <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-        <button onClick={handleLogout} style={{
-          background: "#F43F5E18", color: "#F43F5E", border: "none",
-          padding: collapsed && !isMobile ? "10px 0" : "10px 14px",
-          borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600,
-          display: "flex", alignItems: "center", gap: 8,
-          justifyContent: collapsed && !isMobile ? "center" : "flex-start",
-          transition: "all .15s",
-        }}>
-          <span>🚪</span>
-          {(!collapsed || isMobile) && "Cerrar sesión"}
-        </button>
+      <div className="p-3 flex flex-col gap-2">
+        <SidebarButton
+          icon="mdi:logout"
+          label="Cerrar sesión"
+          color="rose"
+          collapsed={collapsed}
+          isMobile={isMobile}
+          onClick={handleLogout}
+        />
         {!isMobile && (
-          <button onClick={onToggle} style={{
-            background: "transparent", color: "#ffffff44",
-            border: "1px solid #ffffff18", padding: "8px",
-            borderRadius: 10, cursor: "pointer", fontSize: 12, transition: "all .15s",
-          }}>
-            {collapsed ? "→" : "← Colapsar"}
-          </button>
+          <SidebarButton
+            icon={collapsed ? "mdi:chevron-right" : "mdi:chevron-left"}
+            label="Colapsar"
+            color="slate"
+            collapsed={collapsed}
+            isMobile={isMobile}
+            onClick={onToggle}
+          />
         )}
       </div>
     </aside>
   );
 
-  if (isMobile) return (
-    <>
-      {mobileOpen && (
-        <div onClick={onMobileClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 49 }} />
-      )}
-      <div style={{
-        position: "fixed", top: 0, left: mobileOpen ? 0 : -270,
-        height: "100%", zIndex: 50, transition: "left .28s cubic-bezier(.22,1,.36,1)",
-      }}>
-        {inner}
-      </div>
-    </>
-  );
+  if (isMobile)
+    return (
+      <>
+        {mobileOpen && (
+          <div
+            onClick={onMobileClose}
+            className="fixed inset-0 bg-black/50 z-[49]"
+          />
+        )}
+        <div
+          className={`fixed top-0 h-full z-50 transition-[left] duration-300 ease-[cubic-bezier(.22,1,.36,1)] ${
+            mobileOpen ? "left-0" : "-left-[270px]"
+          }`}
+        >
+          {inner}
+        </div>
+      </>
+    );
+
+  return inner;
 
   return inner;
 }
 
 export function Topbar({ title, onMenuClick, isMobile }) {
   return (
-    <header style={{
-      height: 64, background: "#fff",
-      borderBottom: "1px solid #F1F5F9",
-      display: "flex", alignItems: "center",
-      padding: "0 20px", gap: 14,
-      boxShadow: "0 1px 8px rgba(0,0,0,.05)",
-      flexShrink: 0,
-    }}>
+    <header className="h-16 bg-white border-b border-slate-100 flex items-center px-5 gap-3.5 shadow-[0_1px_8px_rgba(0,0,0,.05)] shrink-0">
       {isMobile && (
-        <button onClick={onMenuClick} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#0F2D40" }}>
-          ☰
+        <button
+          onClick={onMenuClick}
+          className="bg-transparent border-none text-[22px] cursor-pointer text-navy"
+        >
+          <Icon icon="mdi:menu" />
         </button>
       )}
       <div>
-        <h1 style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 18, color: "#0F2D40", letterSpacing: "-.01em" }}>{title}</h1>
-        <p style={{ fontSize: 12, color: "#64748B", marginTop: 1 }}>
-          {new Date().toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })}
+        <h1 className="font-syne font-bold text-lg text-navy tracking-tight">
+          {title}
+        </h1>
+        <p className="text-xs text-slate-500 mt-px">
+          {new Date().toLocaleDateString("es-MX", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          })}
         </p>
       </div>
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{
-          background: "#D1FAE5", color: "#059669", padding: "4px 12px",
-          borderRadius: 99, fontSize: 12, fontWeight: 600,
-          display: isMobile ? "none" : "flex", alignItems: "center", gap: 5,
-        }}>
-          <span style={{ width: 6, height: 6, background: "#10B981", borderRadius: "50%", display: "inline-block" }} />
+      <div className="ml-auto flex items-center gap-2.5">
+        <span
+          className={`bg-emerald-100 text-emerald-600 py-1 px-3 rounded-full text-xs font-semibold items-center gap-1.5 ${
+            isMobile ? "hidden" : "flex"
+          }`}
+        >
+          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
           En línea
         </span>
       </div>
