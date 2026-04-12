@@ -4,22 +4,22 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { Sidebar, Topbar } from "./components/shared/Layout";
 
-import LoginPage     from "./pages/LoginPage";
-import POSPage       from "./pages/POSPage";
+import LoginPage from "./pages/LoginPage";
+import POSPage from "./pages/POSPage";
 import InventoryPage from "./pages/InventoryPage";
-import ReportsPage   from "./pages/ReportsPage";
-import AdminPage     from "./pages/AdminPage";
+import ReportsPage from "./pages/ReportsPage";
+import AdminPage from "./pages/AdminPage";
 
 const PAGE_TITLES = {
-  "/pos":       "Punto de Venta",
+  "/pos": "Punto de Venta",
   "/inventory": "Inventario",
-  "/reports":   "Reportes",
-  "/admin":     "Administración",
+  "/reports": "Reportes",
+  "/admin": "Administración",
 };
 
 const ROLE_LANDING = {
-  admin:     "/reports",
-  cajero:    "/pos",
+  admin: "/reports",
+  cajero: "/pos",
   consultor: "/reports",
 };
 
@@ -27,7 +27,8 @@ function ProtectedRoute({ children, roles }) {
   const { user, initializing } = useAuth();
   if (initializing) return null;
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to={ROLE_LANDING[user.role]} replace />;
+  if (roles && !roles.includes(user.role))
+    return <Navigate to={ROLE_LANDING[user.role]} replace />;
   return children;
 }
 
@@ -35,8 +36,8 @@ function AppShell() {
   const { user, initializing } = useAuth();
   const location = useLocation();
 
-  const [collapsed,  setCollapsed]  = useState(false);
-  const [isMobile,   setIsMobile]   = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -50,18 +51,18 @@ function AppShell() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  if (initializing) return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FDFAF6" }}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🍦</div>
-        <p style={{ color: "#64748B", fontFamily: "DM Sans,sans-serif" }}>Cargando NeveriaPOS…</p>
+  if (initializing)
+    return (
+      <div className="h-screen flex items-center justify-center bg-cream">
+        <div className="text-center">
+          <div className="text-5xl mb-3">🍦</div>
+          <p className="text-slate-500 font-sans">Cargando NeveriaPOS…</p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   const isLogin = location.pathname === "/login";
 
-  // Si ya hay usuario autenticado y estamos en login, redirigir al landing
   if (isLogin && user) {
     return <Navigate to={ROLE_LANDING[user.role]} replace />;
   }
@@ -70,7 +71,7 @@ function AppShell() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*"      element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
   }
@@ -78,25 +79,58 @@ function AppShell() {
   const title = PAGE_TITLES[location.pathname] || "NeveriaPOS";
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
-        collapsed={collapsed}  onToggle={() => setCollapsed(v => !v)}
-        isMobile={isMobile}    mobileOpen={mobileOpen}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((v) => !v)}
+        isMobile={isMobile}
+        mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Topbar
           title={title}
           isMobile={isMobile}
           onMenuClick={() => setMobileOpen(true)}
         />
-        <main style={{ flex: 1, overflow: "hidden" }}>
+        <main className="flex-1 overflow-hidden">
           <Routes>
-            <Route path="/pos"       element={<ProtectedRoute roles={["admin","cajero"]}             ><POSPage /></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute roles={["admin","cajero","consultor"]} ><InventoryPage /></ProtectedRoute>} />
-            <Route path="/reports"   element={<ProtectedRoute roles={["admin","consultor"]}          ><ReportsPage /></ProtectedRoute>} />
-            <Route path="/admin"     element={<ProtectedRoute roles={["admin"]}                      ><AdminPage /></ProtectedRoute>} />
-            <Route path="*"          element={<Navigate to={ROLE_LANDING[user.role]} replace />} />
+            <Route
+              path="/pos"
+              element={
+                <ProtectedRoute roles={["admin", "cajero"]}>
+                  <POSPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inventory"
+              element={
+                <ProtectedRoute roles={["admin", "cajero", "consultor"]}>
+                  <InventoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute roles={["admin", "consultor"]}>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="*"
+              element={<Navigate to={ROLE_LANDING[user.role]} replace />}
+            />
           </Routes>
         </main>
       </div>
