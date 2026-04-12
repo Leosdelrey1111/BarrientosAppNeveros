@@ -19,6 +19,9 @@ def db(app):
     with app.app_context():
         yield _db
         _db.session.rollback()
+        for table in reversed(_db.metadata.sorted_tables):
+            _db.session.execute(table.delete())
+        _db.session.commit()
 
 
 @pytest.fixture(scope="function")
